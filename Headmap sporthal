@@ -1,0 +1,18 @@
+# 1. Import Modules
+import numpy as np
+import seaborn as sns
+import matplotlib.pylab as plt
+plt.style.use("seaborn")
+ 
+# input
+data = np.array([[1.1145, 1.5,     1.2,      1.1614, 0.9843, 1.02075,  1.072925],
+                [1.05556, 1.52756, 1.09375,  1.3906, 1.028,  0.86817,  0.812475],
+                [1.347,   1.50003, 1.3697,   1.302,  0.9426, 0.828125, 1.0625]])
+print("Our dataset is : ",data)
+ 
+# 3. Plot the heatmap
+plt.figure(figsize=(10,4))
+heat_map = sns.heatmap( data, linewidth = 1 , annot = True, cmap="plasma", )
+plt.title( "HeatMap nagalmtijd van pingpongzaal (seconden)" )
+
+plt.show()
