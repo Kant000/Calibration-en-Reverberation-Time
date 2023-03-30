@@ -1,0 +1,86 @@
+import sounddevice as sd
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+
+#Kalibratie Geluidsniveau
+# opnemen, 48000 meetwaarden per seconden
+duration = 5   # seconds
+myrecording = sd.rec(int(duration * 48000), samplerate=48000, channels=2)
+sd.wait()
+
+# maak alle meetwaarden positief
+record = np.absolute(myrecording)
+
+# Gemiddelde van elke 100 meetwaarden
+arr = np.array(record[:,0])
+waarden_Gem = np.mean(arr.reshape(-1, 1000), axis=1)
+
+# omrekenen van meetwaarden naar dB
+dB_lijst = []
+for i in waarden_Gem:
+    dB = 8.77605*math.log(i)+95.526
+    dB_lijst.append(dB)
+    
+dB_Gem = np.array(dB_lijst)
+    
+# plot
+x = [ i for i in range(len(dB_Gem)) ]
+y = dB_Gem
+plt.plot(x,y)
+plt.show()
+print("Gemiddelde geluidniveau:",np.average(dB_Gem))
+print("Maximum waarde:", np.max(dB_Gem))
+
+## Nagalmtijd
+# bepaal de maximun en minimum
+dB_Gem_revers = dB_Gem[::-1]
+max_start = np.mean(dB_Gem[5:80]) 
+mini_achtergrond = np.mean(dB_Gem[-50:-1])
+print("Gemiddelde Maximum:",max_start)
+print("Achtergrond geluid",mini_achtergrond)
+max_gem = list(filter(lambda i: i > max_start, dB_Gem_revers))[0]
+index_max = len(dB_Gem_revers) - np.where(dB_Gem_revers==max_gem)[0][0] - 1
+verschil_mimax = max_start - mini_achtergrond
+from_the_top = np.array(dB_Gem[index_max::])
+
+
+# bereken nagalmtijd
+def nagalmtijd(x,i):
+    rt = dB_Gem[index_max] - x
+    #find_rt60 = min(from_the_top, key=lambda x:abs(x-rt60))
+    rt_index = np.where(from_the_top<rt)[0][2]
+    nagalmtijd = (rt_index/48) * i
+    print(index_max)
+    print(rt_index)
+    print("Nagalmtijd in seconden:",nagalmtijd)
+    print("RT", x)
+
+# bepaal de methode(RT60,RT30,RT20,RT15,RT10)
+if verschil_mimax > 60:
+    x = 60
+    i = 1
+    nagalmtijd(x,i)
+    
+elif verschil_mimax <= 60 and verschil_mimax > 30:
+    x = 30
+    i = 2
+    nagalmtijd(x,i)
+    
+elif verschil_mimax <= 30 and verschil_mimax > 20:
+    x = 20
+    i = 3
+    nagalmtijd(x,i)
+    
+elif verschil_mimax <= 20 and verschil_mimax > 15:
+    x = 15
+    i = 4
+    nagalmtijd(x,i)
+    
+elif verschil_mimax <= 15 and verschil_mimax > 10:
+    x = 10
+    i = 6
+    nagalmtijd(x,i)
+    
+else:
+    print("te zacht")
